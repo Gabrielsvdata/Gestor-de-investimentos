@@ -23,7 +23,9 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Install temporary webpack for expo export (no-save, legacy-peer-deps)
-        run: npm install --no-save --legacy-peer-deps @expo/webpack-config webpack webpack-cli
+        run: |
+          npm config set legacy-peer-deps true
+          npm install --no-save --legacy-peer-deps @expo/webpack-config@20 webpack webpack-cli
 
       - name: Export web (generate web-build)
         run: npx expo@latest export:web
