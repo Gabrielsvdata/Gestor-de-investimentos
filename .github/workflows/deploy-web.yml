@@ -19,16 +19,43 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Debug versions
+        run: |
+          node -v
+          npm -v
+          npx --no-install expo --version || true
+
       - name: Install dependencies (legacy peer deps)
         run: npm install --legacy-peer-deps
 
-      - name: Install temporary webpack for expo export (no-save, legacy-peer-deps)
+      - name: Install temporary webpack for expo export (no-save, legacy-peer-deps, fallback)
         run: |
+          set -e
           npm config set legacy-peer-deps true
-          npm install --no-save --legacy-peer-deps @expo/webpack-config@20 webpack webpack-cli
+          echo "Trying @expo/webpack-config@21 first (compatible with Expo 51)..."
+          if npm install --no-save --legacy-peer-deps @expo/webpack-config@21 webpack webpack-cli; then
+            echo "Installed @expo/webpack-config@21"
+          else
+            echo "Failed to install v21, retrying with --force..."
+            if npm install --no-save --legacy-peer-deps --force @expo/webpack-config@21 webpack webpack-cli; then
+              echo "Installed with --force"
+            else
+              echo "Falling back to @expo/webpack-config@20 with --force"
+              npm install --no-save --legacy-peer-deps --force @expo/webpack-config@20 webpack webpack-cli
+            fi
+          fi
 
       - name: Export web (generate web-build)
         run: npx expo@latest export:web
+
+      - name: Verify web-build
+        run: |
+          if [ -f ./web-build/index.html ]; then
+            echo "web-build exists"
+          else
+            echo "web-build is missing!" && ls -la ./web-build || true
+            exit 1
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
