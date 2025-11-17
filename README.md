@@ -11,7 +11,9 @@ simulador-investimento/
 │   └── finance.js              # Cálculos de investimentos
 ├── componentes/
 │   ├── BotaoPersonalizado/     # Botão customizado
-│   └── CaixaDeTexto/           # Input customizado
+│   ├── CaixaDeTexto/           # Input customizado
+│   ├── PopupAviso/             # Popup de aviso customizado (substitui alert)
+│   └── ConfirmModal/           # Modal de confirmação usado globalmente
 ├── contexto/
 │   ├── CalculosContexto.js     # Context para cálculos de investimentos
 │   └── ContextoMoeda.js        # Context para cotação de moedas
@@ -70,6 +72,10 @@ Gerencia:
 #### ContextoMoeda.js
 - Busca taxa de conversão USD/BRL
 - Fornece contexto de câmbio para toda aplicação
+
+#### ConfirmModalContext.js
+- Fornece um modal global de confirmação que retorna uma Promise.
+- Usado por ações como Logout para confirmar com o usuário.
 
 ### API Finance (api/finance.js)
 
@@ -135,8 +141,8 @@ npx expo start
 ### Tecnologias
 - React Native
 - Expo
-- React Navigation (Drawer e Stack)
-- Contexto API (React)
+- React Navigation (Stack)
+- Context API (React)
 - MaterialIcons
 
 ### Próximas Melhorias Sugeridas

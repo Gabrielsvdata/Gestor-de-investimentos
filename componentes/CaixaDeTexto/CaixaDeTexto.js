@@ -15,14 +15,18 @@ const CaixaDeTexto = ({
 }) => {
   return (
     <View style={[styles.container, style]}>
-      {icon && (
-        <MaterialIcons
-          name={icon}
-          size={20}
-          color={theme.colors.primary}
-          style={styles.icon}
-        />
-      )}
+      {icon && (() => {
+        // map deprecated or invalid icon names to valid Material icons
+        const iconName = icon === 'calendar' ? 'event' : icon;
+        return (
+          <MaterialIcons
+            name={iconName}
+            size={20}
+            color={theme.colors.primary}
+            style={styles.icon}
+          />
+        );
+      })()}
       <TextInput
         style={styles.input}
         placeholder={placeholder}

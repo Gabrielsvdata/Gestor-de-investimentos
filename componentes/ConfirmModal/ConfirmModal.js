@@ -1,5 +1,4 @@
-import React from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
+import React from 'react';import { Modal, View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { theme } from '../../theme';
 
 export default function ConfirmModal({ visible, title = 'Confirmar', message = '', onConfirm, onCancel }) {

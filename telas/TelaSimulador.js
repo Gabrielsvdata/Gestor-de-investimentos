@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, Modal, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../theme';
 import CaixaDeTexto from '../componentes/CaixaDeTexto';
@@ -8,6 +7,7 @@ import BotaoPersonalizado from '../componentes/BotaoPersonalizado';
 import { compararInvestimentos } from '../api/finance';
 import { useCalculos } from '../contexto/CalculosContexto';
 import { converterMoeda } from '../api/conversorMoedas';
+import PopupAviso from '../componentes/PopupAviso/PopupAviso';
 
 export default function TelaSimulador() {
   const [valorInicial, setValorInicial] = useState('');
@@ -15,12 +15,16 @@ export default function TelaSimulador() {
   const [meses, setMeses] = useState('12');
   const [resultados, setResultados] = useState(null);
   const { simularInvestimento, tiposInvestimento, carregando, ultimaAtualizacao } = useCalculos();
+  const [tipoModalVisible, setTipoModalVisible] = useState(false);
   const [valorConvertidoUSD, setValorConvertidoUSD] = useState(null);
   const [conversaoErro, setConversaoErro] = useState(null);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
 
   const handleSimular = () => {
     if (!valorInicial || parseFloat(valorInicial) <= 0) {
-      alert('Por favor, insira um valor válido');
+      setPopupMessage('Por favor, insira um valor válido');
+      setPopupVisible(true);
       return;
     }
 
@@ -51,12 +55,9 @@ export default function TelaSimulador() {
 
   const renderResultado = ({ item }) => {
     const isEscolhido = item.tipo === tipoInvestimento;
-    
+
     return (
-      <View style={[
-        styles.cartaoResultado,
-        isEscolhido && styles.cartaoEscolhido
-      ]}>
+      <View style={[styles.cartaoResultado, isEscolhido && styles.cartaoEscolhido]}>
         <View style={styles.headerResultado}>
           <View style={styles.nomeContainer}>
             <Text style={styles.nomeInvestimento}>{item.nome}</Text>
@@ -101,6 +102,7 @@ export default function TelaSimulador() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.content}>
+        <PopupAviso visible={popupVisible} title="Campo obrigatório" message={popupMessage} onClose={() => setPopupVisible(false)} />
         <Text style={styles.titulo}>Simule seu Investimento</Text>
 
         {carregando ? (
@@ -131,9 +133,12 @@ export default function TelaSimulador() {
           />
 
           {valorConvertidoUSD !== null && (
-            <Text style={{ marginTop: theme.spacing.sm, color: theme.colors.textSoft }}>
-              ≈ US$ {valorConvertidoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </Text>
+            <>
+              <Text style={{ marginTop: theme.spacing.sm, color: theme.colors.textSoft }}>
+                ≈ US$ {valorConvertidoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Text>
+              <PopupAviso visible={popupVisible} title="Campo obrigatório" message={popupMessage} onClose={() => setPopupVisible(false)} />
+            </>
           )}
           {conversaoErro && (
             <Text style={{ marginTop: theme.spacing.sm, color: theme.colors.danger }}>{conversaoErro}</Text>
@@ -142,23 +147,50 @@ export default function TelaSimulador() {
           <Text style={[styles.label, { marginTop: theme.spacing.lg }]}>
             Tipo de Investimento
           </Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={tipoInvestimento}
-              onValueChange={setTipoInvestimento}
-              style={styles.picker}
-              dropdownIconColor={theme.colors.primary}
-              enabled={!carregando}
-            >
-              {Object.entries(tiposInvestimento).map(([key, value]) => (
-                <Picker.Item
-                  key={key}
-                  label={`${value.nome} (${value.taxa.toFixed(2)}%)`}
-                  value={key}
-                />
-              ))}
-            </Picker>
-          </View>
+          <TouchableOpacity
+            style={styles.pickerContainer}
+            onPress={() => !carregando && setTipoModalVisible(true)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.pickerRow}>
+              <Text style={styles.pickerText} numberOfLines={1} ellipsizeMode="tail">
+                {tiposInvestimento && tiposInvestimento[tipoInvestimento]
+                  ? `${tiposInvestimento[tipoInvestimento].nome} (${tiposInvestimento[tipoInvestimento].taxa.toFixed(2)}%)`
+                  : 'Selecione um tipo'}
+              </Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color={theme.colors.textSoft} />
+            </View>
+          </TouchableOpacity>
+
+          <Modal
+            visible={tipoModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setTipoModalVisible(false)}
+          >
+            <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setTipoModalVisible(false)} />
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Escolha o tipo de investimento</Text>
+              <FlatList
+                data={Object.entries(tiposInvestimento)}
+                keyExtractor={([key]) => key}
+                renderItem={({ item }) => {
+                  const [key, value] = item;
+                  const selected = key === tipoInvestimento;
+                  return (
+                    <TouchableOpacity
+                      style={[styles.optionItem, selected && styles.optionSelected]}
+                      onPress={() => { setTipoInvestimento(key); setTipoModalVisible(false); }}
+                    >
+                      <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
+                        {value.nome} ({value.taxa.toFixed(2)}%)
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            </View>
+          </Modal>
 
           <Text style={[styles.label, { marginTop: theme.spacing.lg }]}>
             Período (Meses)
@@ -168,7 +200,7 @@ export default function TelaSimulador() {
             value={meses}
             onChangeText={setMeses}
             keyboardType="number-pad"
-            icon="calendar"
+            icon="event"
           />
 
           <BotaoPersonalizado
@@ -243,11 +275,57 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: theme.radius.md,
     overflow: 'hidden',
-    backgroundColor: theme.colors.screen,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
   },
-  picker: {
-    height: 50,
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pickerText: {
     color: theme.colors.text,
+    fontSize: 14,
+    flex: 1,
+    marginRight: theme.spacing.sm,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)'
+  },
+  modalCard: {
+    position: 'absolute',
+    top: 120,
+    left: 20,
+    right: 20,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.md,
+    ...theme.shadow.card,
+    maxHeight: '60%'
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+  },
+  optionItem: {
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.radius.sm,
+  },
+  optionText: {
+    color: theme.colors.text,
+    fontSize: 14,
+  },
+  optionSelected: {
+    backgroundColor: theme.colors.primaryMuted,
+  },
+  optionTextSelected: {
+    color: theme.colors.primary,
+    fontWeight: '700',
   },
   secaoResultados: {
     marginTop: theme.spacing.xl,

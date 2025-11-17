@@ -31,7 +31,7 @@ export default function TelaLogin({ navigation }) {
 
     setErro('');
     fazerLogin(nome.trim());
-    navigation.replace('Drawer');
+    navigation.replace('Main');
   };
 
   return (

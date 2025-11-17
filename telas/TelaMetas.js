@@ -5,6 +5,7 @@ import { theme } from '../theme';
 import CaixaDeTexto from '../componentes/CaixaDeTexto';
 import BotaoPersonalizado from '../componentes/BotaoPersonalizado';
 import { useCalculos } from '../contexto/CalculosContexto';
+import PopupAviso from '../componentes/PopupAviso/PopupAviso';
 
 export default function TelaMetas() {
   const [descricao, setDescricao] = useState('');
@@ -13,10 +14,13 @@ export default function TelaMetas() {
   const [aporteMensal, setAporteMensal] = useState('');
   const [resultados, setResultados] = useState(null);
   const { tiposInvestimento, carregando, ultimaAtualizacao } = useCalculos();
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
 
   const calcularMeta = () => {
     if (!metaValor || !aporteMensal) {
-      alert('Preencha pelo menos a Meta e o Aporte Mensal');
+      setPopupMessage('Preencha pelo menos a Meta e o Aporte Mensal');
+      setPopupVisible(true);
       return;
     }
 
@@ -25,12 +29,14 @@ export default function TelaMetas() {
     const mensal = parseFloat(aporteMensal);
 
     if (meta <= 0 || inicial < 0 || mensal <= 0) {
-      alert('Valores inválidos');
+      setPopupMessage('Valores inválidos');
+      setPopupVisible(true);
       return;
     }
 
     if (inicial >= meta) {
-      alert('Você já tem o valor da meta!');
+      setPopupMessage('Você já tem o valor da meta!');
+      setPopupVisible(true);
       return;
     }
 
@@ -145,6 +151,7 @@ export default function TelaMetas() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <PopupAviso visible={popupVisible} title="Aviso" message={popupMessage} onClose={() => setPopupVisible(false)} />
       <View style={styles.content}>
         <Text style={styles.titulo}>Planejador de Metas</Text>
         <Text style={styles.subtitulo}>Descubra quanto tempo levará para alcançar seus objetivos financeiros</Text>
@@ -205,7 +212,7 @@ export default function TelaMetas() {
             value={aporteMensal}
             onChangeText={setAporteMensal}
             keyboardType="decimal-pad"
-            icon="calendar"
+            icon="event"
           />
 
           <BotaoPersonalizado

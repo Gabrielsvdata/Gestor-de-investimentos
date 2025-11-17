@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "simulador-investimento",
+    "slug": "simulador-investimento",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "jsEngine": "hermes",
+    "plugins": [
+      "expo-font"
+    ],
+    "android": {
+      "package": "com.anonymous.simuladorinvestimento"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.anonymous.simuladorinvestimento",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f1f5044b-600e-434e-90e2-3107819cb77d"
+      }
+    }
+  }
+}

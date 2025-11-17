@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TelaLogin from './telas/TelaLogin';
-import DrawerNavigator from './navegacao/DrawerNavigator';
+import MainNavigator from './navegacao/MainNavigator';
 import { theme } from './theme';
 import { CurrencyProvider } from './contexto/ContextoMoeda';
 import { CalculosProvider } from './contexto/CalculosContexto';
@@ -27,6 +28,7 @@ export default function App() {
   if (!loaded) return null;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <UsuarioProvider>
       <ConfirmModalProvider>
         <CurrencyProvider>
@@ -40,12 +42,13 @@ export default function App() {
               }}
             >
               <Stack.Screen name="Login" component={TelaLogin} />
-              <Stack.Screen name="Drawer" component={DrawerNavigator} />
+              <Stack.Screen name="Main" component={MainNavigator} />
             </Stack.Navigator>
           </NavigationContainer>
         </CalculosProvider>
       </CurrencyProvider>
       </ConfirmModalProvider>
     </UsuarioProvider>
+    </GestureHandlerRootView>
   );
 }
