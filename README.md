@@ -1,154 +1,126 @@
-## Simulador de Investimentos
+```markdown
+# Simulador de Investimentos
 
-Projeto React Native com Expo para simular diferentes tipos de investimentos e planejar metas financeiras.
+Aplicativo criado com Expo + React Native para simular investimentos e planejar metas financeiras sem precisar instalar apps bancários ou visitar sites duvidosos. Usa fontes oficiais (Banco Central) para atualizar taxas e realiza os cálculos localmente.
 
-### Estrutura do Projeto
+---
+
+## Estrutura do projeto (atualizada)
 
 ```
 simulador-investimento/
 ├── api/
-│   ├── conversorMoedas.js      # API para conversão de moedas
-│   └── finance.js              # Cálculos de investimentos
+│   ├── bancocentral.js        # Busca séries e taxas oficiais (SELIC, CDI, IPCA)
+│   ├── conversorMoedas.js     # Cotação / conversão entre moedas
+│   └── finance.js             # Lógica e funções de simulação/comparação
 ├── componentes/
-│   ├── BotaoPersonalizado/     # Botão customizado
-│   ├── CaixaDeTexto/           # Input customizado
-│   ├── PopupAviso/             # Popup de aviso customizado (substitui alert)
-│   └── ConfirmModal/           # Modal de confirmação usado globalmente
+│   ├── BotaoPersonalizado/    # Botões estilizados do app
+│   ├── CaixaDeTexto/          # Inputs com ícone (usados em formulários)
+│   ├── ConfirmModal/          # Modal de confirmação animado
+│   └── PopupAviso/            # Modal de aviso (substitui alert nativo)
 ├── contexto/
-│   ├── CalculosContexto.js     # Context para cálculos de investimentos
-│   └── ContextoMoeda.js        # Context para cotação de moedas
+│   ├── CalculosContexto.js    # Provider com simulações e tipos de investimento
+│   ├── ConfirmModalContext.js # API global para confirmar ações (Promise-based)
+│   ├── ContextoMoeda.js       # Provider para taxa/convert moeda
+│   └── UsuarioContexto.js     # Estado simples do usuário (login/logout)
+├── navegacao/
+│   └── MainNavigator.js       # Stack principal + menu superior (substitui Drawer)
 ├── telas/
-│   ├── TelaLogin.js            # Tela de login
-│   ├── TelaSimulador.js        # Tela de simulação de investimentos
-│   └── TelaMetas.js            # Tela de planejamento de metas
-├── App.js                       # Componente raiz
-├── index.js                     # Ponto de entrada
-├── package.json                 # Dependências
-└── theme.js                     # Tema da aplicação
+│   ├── TelaLogin.js
+│   ├── TelaSimulador.js       # Tela principal de simulação (BRL formatting)
+│   └── TelaMetas.js           # Planejador de metas (formatos BRL aplicados)
+├── scripts/
+│   └── testApis.mjs           # Script Node para testar chamadas às APIs
+├── App.js
+├── index.js
+├── package.json
+├── babel.config.js
+└── theme.js
 ```
 
-### Funcionalidades Implementadas
+## Sobre o projeto (em poucas palavras)
 
-#### 1. **Tela de Login** (TelaLogin.js)
-- Campo para usuário e senha
-- Validações básicas
-- Acesso ao menu principal
+O app permite simular diferentes tipos de investimento usando taxas oficiais. A ideia é oferecer uma alternativa rápida e segura para testar cenários financeiros sem depender de apps bancários ou serviços não confiáveis.
 
-#### 2. **Tela de Simulador** (TelaSimulador.js)
-- Simula investimentos com os seguintes tipos:
-  - **SELIC**: Tesouro Selic (0.56% a.m)
-  - **CDB**: CDB (0.54% a.m)
-  - **LCI_LCA**: LCI/LCA (0.52% a.m)
-  - **FUNDO**: Fundo Multimercado (0.48% a.m)
-- Permite definir valor inicial, tipo de investimento e período
-- Compara retornos de todos os investimentos
-- Exibe comparação com rentabilidade em %
+Principais cuidados:
+- Cálculos são feitos localmente no app.
+- Taxas são obtidas de APIs públicas (Banco Central) quando disponíveis.
+- Não há coleta de dados sensíveis nem integração com contas bancárias.
 
-#### 3. **Tela de Metas** (TelaMetas.js)
-- Criar metas financeiras
-- Definir valor da meta e montante disponível
-- Sistema recomenda o **melhor investimento** para atingir a meta
-- Exibe:
-  - Taxa de juros mensal
-  - Tempo necessário para atingir a meta
-  - Ganho esperado
-- Gerenciar (adicionar/remover) metas
+## Funcionalidades principais
 
-### Contextos
+- Simulação por tipo de investimento (comparação entre opções).
+- Planejador de metas: calcula quanto tempo / quanto investir por mês para atingir um objetivo.
+- Formatação de valores em BRL nas telas (`TelaSimulador` e `TelaMetas`).
+- Modal de aviso (`PopupAviso`) substituindo chamadas nativas `alert()`.
+- Confirmações globais via `ConfirmModalContext` (útil para logout).
+- Substituição de pickers nativos por modal + `FlatList` cross-platform.
 
-#### CalculosContexto.js
-Gerencia:
-- Simulações de investimentos
-- Metas financeiras
-- Cálculos de juros compostos
-- Recomendação de melhor investimento
+## Como rodar (rápido)
 
-**Funções principais:**
-- `simularInvestimento()` - Simula um investimento
-- `adicionarMeta()` - Adiciona nova meta
-- `removerMeta()` - Remove uma meta
-- `calcularMetaInvestimento()` - Calcula investimento mínimo
+Pré-requisitos: `node`, `npm`/`yarn`, Expo CLI (opcional para mobile).
 
-#### ContextoMoeda.js
-- Busca taxa de conversão USD/BRL
-- Fornece contexto de câmbio para toda aplicação
-
-#### ConfirmModalContext.js
-- Fornece um modal global de confirmação que retorna uma Promise.
-- Usado por ações como Logout para confirmar com o usuário.
-
-### API Finance (api/finance.js)
-
-**Tipos de investimento:**
-```javascript
-{
-  SELIC: { nome: 'Tesouro Selic', taxa: 0.56 },
-  CDB: { nome: 'CDB', taxa: 0.54 },
-  LCI_LCA: { nome: 'LCI/LCA', taxa: 0.52 },
-  FUNDO: { nome: 'Fundo Multimercado', taxa: 0.48 }
-}
-```
-
-**Funções:**
-- `calcularTempo()` - Calcula tempo para atingir valor com juros compostos
-- `calcularInvestimentoMinimo()` - Calcula investimento mínimo para meta
-- `encontrarMelhorInvestimento()` - Encontra melhor opção de investimento
-- `calcularValorFuturo()` - Calcula valor futuro
-- `compararInvestimentos()` - Compara todos os investimentos
-
-### Componentes Reutilizáveis
-
-#### BotaoPersonalizado
-Botão customizado com tema aplicado
-```javascript
-<BotaoPersonalizado
-  title="Simular"
-  onPress={handleSimular}
-  disabled={false}
-/>
-```
-
-#### CaixaDeTexto
-Input customizado com ícone
-```javascript
-<CaixaDeTexto
-  placeholder="Valor inicial"
-  value={valor}
-  onChangeText={setValor}
-  keyboardType="decimal-pad"
-  icon="money"
-/>
-```
-
-### Como Executar
+1) Instalar dependências:
 
 ```bash
-# Instalar dependências (já feito)
 npm install
+# ou
+yarn
+```
 
-# Iniciar o servidor
-npm start
+2) Rodar em desenvolvimento com Expo:
 
-# Ou diretamente com Expo
+```bash
 npx expo start
 ```
 
-### Requisitos
-- Node.js
-- Expo CLI
-- Telefone com Expo Go ou emulador
+3) Testar as chamadas de API diretamente (script incluido):
 
-### Tecnologias
-- React Native
-- Expo
-- React Navigation (Stack)
-- Context API (React)
-- MaterialIcons
+PowerShell (Windows):
+```powershell
+Set-Location 'C:\Users\gabri\Área de Trabalho\simulador-investimento'
+node .\scripts\testApis.mjs
+```
 
-### Próximas Melhorias Sugeridas
-- Integração com APIs reais de cotações
-- Persistência de dados (AsyncStorage)
-- Gráficos de crescimento do investimento
-- Notificações de metas atingidas
-- Histórico de simulações
-- Autenticação real
+Bash / macOS / WSL:
+```bash
+cd ~/Área\ de\ Trabalho/simulador-investimento
+node ./scripts/testApis.mjs
+```
+
+O script `scripts/testApis.mjs` executa chamadas a `api/bancocentral.js` e `api/conversorMoedas.js` e imprime as respostas no terminal.
+
+## Componentes e Contextos (resumo)
+
+- `BotaoPersonalizado`: botão estilizado usado nas telas.
+- `CaixaDeTexto`: input com ícone; usado para valores e textos.
+- `PopupAviso`: modal simples para mostrar mensagens de validação/erro.
+- `ConfirmModal`: modal animado de confirmação (usado pelo `ConfirmModalContext`).
+- `CalculosContexto`: provider que centraliza simulações e tipos de investimento.
+- `ContextoMoeda`: provider para conversão/taxa de câmbio.
+
+## Observações sobre dependências e decisões
+
+- O Drawer foi removido da experiência principal e substituído por um `MainNavigator` com menu no header para simplificar a navegação e facilitar compatibilidade web/mobile.
+- Substituímos pickers nativos por um modal customizado para evitar dependências adicionais e inconsistências entre plataformas.
+- Algumas bibliotecas não usadas foram removidas do `package.json` para reduzir o tamanho.
+
+## Contribuição
+
+Contribuições são bem-vindas. Sugestões:
+- Corrigir bugs / melhorar validações.
+- Melhorar UX (máscaras de entrada, acessibilidade).
+- Adicionar persistência (AsyncStorage) ou exportar relatórios.
+
+Abra issues ou envie PRs direcionados ao branch `main`.
+
+## Licença
+
+Por padrão pode-se usar `MIT`. Se quiser, eu adiciono o arquivo `LICENSE` com o conteúdo MIT.
+
+---
+
+Se quiser, adapto esse README para uma versão mais curta (post para GitHub) ou adiciono seções técnicas extras (diagramas, sequências de chamadas de API, exemplos de payloads).
+
+``` 
+# Instalar dependências (já feito)
