@@ -9,24 +9,27 @@ import PopupAviso from '../componentes/PopupAviso/PopupAviso';
 
 export default function TelaMetas() {
   const [descricao, setDescricao] = useState('');
-  const [metaValor, setMetaValor] = useState('');
-  const [aporteInicial, setAporteInicial] = useState('0');
-  const [aporteMensal, setAporteMensal] = useState('');
+  const [metaValorDisplay, setMetaValorDisplay] = useState('0,00');
+  const [metaValorNumeric, setMetaValorNumeric] = useState('0.00');
+  const [aporteInicialDisplay, setAporteInicialDisplay] = useState('0,00');
+  const [aporteInicialNumeric, setAporteInicialNumeric] = useState('0.00');
+  const [aporteMensalDisplay, setAporteMensalDisplay] = useState('0,00');
+  const [aporteMensalNumeric, setAporteMensalNumeric] = useState('0.00');
   const [resultados, setResultados] = useState(null);
   const { tiposInvestimento, carregando, ultimaAtualizacao } = useCalculos();
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
 
   const calcularMeta = () => {
-    if (!metaValor || !aporteMensal) {
+    if (!metaValorNumeric || !aporteMensalNumeric) {
       setPopupMessage('Preencha pelo menos a Meta e o Aporte Mensal');
       setPopupVisible(true);
       return;
     }
 
-    const meta = parseFloat(metaValor);
-    const inicial = parseFloat(aporteInicial) || 0;
-    const mensal = parseFloat(aporteMensal);
+    const meta = parseFloat(metaValorNumeric);
+    const inicial = parseFloat(aporteInicialNumeric) || 0;
+    const mensal = parseFloat(aporteMensalNumeric);
 
     if (meta <= 0 || inicial < 0 || mensal <= 0) {
       setPopupMessage('Valores inválidos');
@@ -78,6 +81,17 @@ export default function TelaMetas() {
     simulacoes.sort((a, b) => a.meses - b.meses);
 
     setResultados(simulacoes);
+  };
+
+  const formatCurrencyInput = (text, setDisplay, setNumeric) => {
+    const digits = (text || '').replace(/\D/g, '');
+    const cents = digits === '' ? 0 : parseInt(digits, 10);
+    const reais = Math.floor(cents / 100);
+    const centavos = cents % 100;
+    const reaisFormatted = reais.toLocaleString('pt-BR');
+    const display = `${reaisFormatted},${String(centavos).padStart(2, '0')}`;
+    setDisplay(display);
+    setNumeric((cents / 100).toFixed(2));
   };
 
   const renderResultado = ({ item, index }) => {
@@ -142,7 +156,7 @@ export default function TelaMetas() {
         <View style={styles.infoAdicional}>
           <MaterialIcons name="info-outline" size={14} color={theme.colors.textSoft} />
           <Text style={styles.textoInfoAdicional}>
-            {item.meses} aportes mensais de R$ {parseFloat(aporteMensal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            {item.meses} aportes mensais de R$ {parseFloat(aporteMensalNumeric || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </Text>
         </View>
       </View>
@@ -187,8 +201,8 @@ export default function TelaMetas() {
           </Text>
           <CaixaDeTexto
             placeholder="Ex: 200000"
-            value={metaValor}
-            onChangeText={setMetaValor}
+            value={metaValorDisplay}
+            onChangeText={(t) => formatCurrencyInput(t, setMetaValorDisplay, setMetaValorNumeric)}
             keyboardType="decimal-pad"
             icon="money"
           />
@@ -198,8 +212,8 @@ export default function TelaMetas() {
           </Text>
           <CaixaDeTexto
             placeholder="Ex: 100000 (deixe 0 se não tiver nada)"
-            value={aporteInicial}
-            onChangeText={setAporteInicial}
+            value={aporteInicialDisplay}
+            onChangeText={(t) => formatCurrencyInput(t, setAporteInicialDisplay, setAporteInicialNumeric)}
             keyboardType="decimal-pad"
             icon="savings"
           />
@@ -209,8 +223,8 @@ export default function TelaMetas() {
           </Text>
           <CaixaDeTexto
             placeholder="Ex: 1000"
-            value={aporteMensal}
-            onChangeText={setAporteMensal}
+            value={aporteMensalDisplay}
+            onChangeText={(t) => formatCurrencyInput(t, setAporteMensalDisplay, setAporteMensalNumeric)}
             keyboardType="decimal-pad"
             icon="event"
           />
@@ -234,13 +248,13 @@ export default function TelaMetas() {
 
             <View style={styles.infoMeta}>
               <Text style={styles.textoMeta}>
-                Para atingir <Text style={styles.valorMeta}>R$ {parseFloat(metaValor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
+                Para atingir <Text style={styles.valorMeta}>R$ {parseFloat(metaValorNumeric || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
               </Text>
               {descricao && (
                 <Text style={styles.descricaoMetaTexto}>"{descricao}"</Text>
               )}
               <Text style={styles.resumoMeta}>
-                Investindo R$ {parseFloat(aporteMensal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
+                Investindo R$ {parseFloat(aporteMensalNumeric || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
               </Text>
             </View>
 

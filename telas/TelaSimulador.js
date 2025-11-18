@@ -10,7 +10,8 @@ import { converterMoeda } from '../api/conversorMoedas';
 import PopupAviso from '../componentes/PopupAviso/PopupAviso';
 
 export default function TelaSimulador() {
-  const [valorInicial, setValorInicial] = useState('');
+  const [valorInicialNumeric, setValorInicialNumeric] = useState('0.00');
+  const [valorInicialDisplay, setValorInicialDisplay] = useState('0,00');
   const [tipoInvestimento, setTipoInvestimento] = useState('SELIC');
   const [meses, setMeses] = useState('12');
   const [resultados, setResultados] = useState(null);
@@ -22,13 +23,13 @@ export default function TelaSimulador() {
   const [popupMessage, setPopupMessage] = useState('');
 
   const handleSimular = () => {
-    if (!valorInicial || parseFloat(valorInicial) <= 0) {
+    if (!valorInicialNumeric || parseFloat(valorInicialNumeric) <= 0) {
       setPopupMessage('Por favor, insira um valor válido');
       setPopupVisible(true);
       return;
     }
 
-    const valor = parseFloat(valorInicial);
+    const valor = parseFloat(valorInicialNumeric);
     const mesesTotais = parseInt(meses) || 12;
 
     // Converte o valor para USD (exibição)
@@ -91,12 +92,24 @@ export default function TelaSimulador() {
           <View style={styles.dadoItem}>
             <Text style={styles.labelDado}>Rentabilidade</Text>
             <Text style={[styles.valorDado, { color: theme.colors.info }]}>
-              {((item.ganho / parseFloat(valorInicial)) * 100).toFixed(2)}%
+              {parseFloat(valorInicialNumeric) > 0 ? ((item.ganho / parseFloat(valorInicialNumeric)) * 100).toFixed(2) : '0.00'}%
             </Text>
           </View>
         </View>
       </View>
     );
+  };
+
+  const handleValorInicialChange = (text) => {
+    // keep only digits, interpret as cents
+    const digits = (text || '').replace(/\D/g, '');
+    const cents = digits === '' ? 0 : parseInt(digits, 10);
+    const reais = Math.floor(cents / 100);
+    const centavos = cents % 100;
+    const reaisFormatted = reais.toLocaleString('pt-BR');
+    const display = `${reaisFormatted},${String(centavos).padStart(2, '0')}`;
+    setValorInicialDisplay(display);
+    setValorInicialNumeric((cents / 100).toFixed(2));
   };
 
   return (
@@ -126,9 +139,9 @@ export default function TelaSimulador() {
           <Text style={styles.label}>Valor Inicial (R$)</Text>
           <CaixaDeTexto
             placeholder="0,00"
-            value={valorInicial}
-            onChangeText={setValorInicial}
-            keyboardType="decimal-pad"
+            value={valorInicialDisplay}
+            onChangeText={handleValorInicialChange}
+            keyboardType="numeric"
             icon="money"
           />
 
