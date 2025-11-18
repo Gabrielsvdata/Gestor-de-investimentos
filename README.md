@@ -61,6 +61,68 @@ Principais cuidados:
 Pré-requisitos: `node`, `npm`/`yarn`, Expo CLI (opcional para mobile).
 
 1) Instalar dependências:
+# Simulador de Investimentos
+
+Aplicativo criado com Expo + React Native para simular investimentos e planejar metas financeiras sem precisar instalar apps bancários ou visitar sites duvidosos. Usa fontes oficiais (Banco Central) para atualizar taxas e realiza os cálculos localmente.
+
+---
+
+## Estrutura do projeto (atualizada)
+
+```
+simulador-investimento/
+├── api/
+│   ├── bancocentral.js        # Busca séries e taxas oficiais (SELIC, CDI, IPCA)
+│   ├── conversorMoedas.js     # Cotação / conversão entre moedas
+│   └── finance.js             # Lógica e funções de simulação/comparação
+├── componentes/
+│   ├── BotaoPersonalizado/    # Botões estilizados do app
+│   ├── CaixaDeTexto/          # Inputs com ícone (usados em formulários)
+│   ├── ConfirmModal/          # Modal de confirmação animado
+│   └── PopupAviso/            # Modal de aviso (substitui alert nativo)
+├── contexto/
+│   ├── CalculosContexto.js    # Provider com simulações e tipos de investimento
+│   ├── ConfirmModalContext.js # API global para confirmar ações (Promise-based)
+│   ├── ContextoMoeda.js       # Provider para taxa/convert moeda
+│   └── UsuarioContexto.js     # Estado simples do usuário (login/logout)
+├── navegacao/
+│   └── MainNavigator.js       # Stack principal + menu superior (substitui Drawer)
+├── telas/
+│   ├── TelaLogin.js
+│   ├── TelaSimulador.js       # Tela principal de simulação (BRL formatting)
+│   └── TelaMetas.js           # Planejador de metas (formatos BRL aplicados)
+├── scripts/
+│   └── testApis.mjs           # Script Node para testar chamadas às APIs
+├── App.js
+├── index.js
+├── package.json
+├── babel.config.js
+└── theme.js
+```
+
+## Sobre o projeto (em poucas palavras)
+
+O app permite simular diferentes tipos de investimento usando taxas oficiais. A ideia é oferecer uma alternativa rápida e segura para testar cenários financeiros sem depender de apps bancários ou serviços não confiáveis.
+
+Principais cuidados:
+- Cálculos são feitos localmente no app.
+- Taxas são obtidas de APIs públicas (Banco Central) quando disponíveis.
+- Não há coleta de dados sensíveis nem integração com contas bancárias.
+
+## Funcionalidades principais
+
+- Simulação por tipo de investimento (comparação entre opções).
+- Planejador de metas: calcula quanto tempo / quanto investir por mês para atingir um objetivo.
+- Formatação de valores em BRL nas telas (`TelaSimulador` e `TelaMetas`).
+- Modal de aviso (`PopupAviso`) substituindo chamadas nativas `alert()`.
+- Confirmações globais via `ConfirmModalContext` (útil para logout).
+- Substituição de pickers nativos por modal + `FlatList` cross-platform.
+
+## Como rodar (rápido)
+
+Pré-requisitos: `node`, `npm`/`yarn`, Expo CLI (opcional para mobile).
+
+1) Instalar dependências:
 
 ```bash
 npm install
@@ -121,6 +183,3 @@ Por padrão pode-se usar `MIT`. Se quiser, eu adiciono o arquivo `LICENSE` com o
 ---
 
 Se quiser, adapto esse README para uma versão mais curta (post para GitHub) ou adiciono seções técnicas extras (diagramas, sequências de chamadas de API, exemplos de payloads).
-
-``` 
-# Instalar dependências (já feito)
